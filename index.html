@@ -185,7 +185,23 @@
 
         .exclusion-pair {
             flex: 1;
-            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .exclusion-separator {
+            display: inline-block;
+            margin: 0 12px;
+            font-size: 1.2em;
+            vertical-align: middle;
+        }
+
+        .exclusion-separator::before {
+            content: '➜';
+        }
+
+        .exclusion-receiver {
+            font-size: 1.1em;
         }
 
         .results {
@@ -297,9 +313,9 @@
         <div class="section">
             <h2 class="section-title">Add Participants</h2>
             <div class="input-group">
-                <input type="text" id="nameInput" placeholder="Name*">
-                <input type="tel" id="phoneInput" placeholder="(XXX) XXX-XXXX">
-                <input type="url" id="wishlistInput" placeholder="Wishlist URL">
+                <input type="text" id="nameInput" placeholder="Name*" maxlength="100">
+                <input type="tel" id="phoneInput" placeholder="(XXX) XXX-XXXX" maxlength="20">
+                <input type="url" id="wishlistInput" placeholder="Wishlist URL" maxlength="2048">
                 <button class="secondary" onclick="addParticipant()">Add</button>
             </div>
             <div id="participantsList" class="participants-list"><div class="empty-state">No participants added yet</div></div>
@@ -337,6 +353,25 @@
         let exclusions = [];
         let currentPairings = [];
 
+        // Escape HTML to prevent XSS attacks
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Escape HTML attribute values
+        function escapeHtmlAttr(text) {
+            if (text == null) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
         function addParticipant() {
             const nameInput = document.getElementById('nameInput');
             const phoneInput = document.getElementById('phoneInput');
@@ -347,6 +382,22 @@
 
             if (!name) {
                 showError('Please enter a name');
+                return;
+            }
+
+            // Validate input lengths
+            if (name.length > 100) {
+                showError('Name must be 100 characters or less');
+                return;
+            }
+
+            if (phone.length > 20) {
+                showError('Phone number must be 20 characters or less');
+                return;
+            }
+
+            if (wishlist && wishlist.length > 2048) {
+                showError('Wishlist URL must be 2048 characters or less');
                 return;
             }
 
@@ -370,6 +421,11 @@
             exclusions = exclusions.filter(ex => 
                 ex.giverIndex !== index && ex.receiverIndex !== index
             );
+            // Reindex remaining exclusions: decrement indices greater than the removed index
+            exclusions = exclusions.map(ex => ({
+                giverIndex: ex.giverIndex > index ? ex.giverIndex - 1 : ex.giverIndex,
+                receiverIndex: ex.receiverIndex > index ? ex.receiverIndex - 1 : ex.receiverIndex
+            }));
             updateParticipantsList();
             updateExclusionDropdowns();
             updateExclusionsList();
@@ -385,7 +441,7 @@
             list.innerHTML = participants.map((p, index) => `
                 <div class="participant-item">
                     <div class="participant-info">
-                        <div class="participant-name">${p.name}</div>
+                        <div class="participant-name">${escapeHtml(p.name)}</div>
                     </div>
                     <button class="danger" onclick="removeParticipant(${index})">Remove</button>
                 </div>
@@ -395,11 +451,26 @@
         function addExclusion() {
             const giverSelect = document.getElementById('excludeGiver');
             const receiverSelect = document.getElementById('excludeReceiver');
+            
+            // Check if selections are empty before parsing
+            if (giverSelect.value === '' || receiverSelect.value === '') {
+                showError('Please select both giver and receiver');
+                return;
+            }
+            
             const giverIndex = parseInt(giverSelect.value);
             const receiverIndex = parseInt(receiverSelect.value);
 
-            if (giverIndex === '' || receiverIndex === '') {
+            // Validate parsed values (check for NaN)
+            if (isNaN(giverIndex) || isNaN(receiverIndex)) {
                 showError('Please select both giver and receiver');
+                return;
+            }
+
+            // Validate bounds and non-negative indices
+            if (giverIndex < 0 || giverIndex >= participants.length ||
+                receiverIndex < 0 || receiverIndex >= participants.length) {
+                showError('Invalid participant selection');
                 return;
             }
 
@@ -426,6 +497,18 @@
             updateExclusionsList();
         }
 
+        // Cleanup function to remove invalid exclusions (e.g., with out-of-bounds indices)
+        function cleanupInvalidExclusions() {
+            const initialCount = exclusions.length;
+            exclusions = exclusions.filter(ex => 
+                ex.giverIndex >= 0 && ex.giverIndex < participants.length &&
+                ex.receiverIndex >= 0 && ex.receiverIndex < participants.length
+            );
+            if (exclusions.length < initialCount) {
+                updateExclusionsList();
+            }
+        }
+
         function updateExclusionsList() {
             const list = document.getElementById('exclusionsList');
             if (exclusions.length === 0) {
@@ -434,11 +517,20 @@
             }
 
             list.innerHTML = exclusions.map((ex, index) => {
-                const giver = participants[ex.giverIndex].name;
-                const receiver = participants[ex.receiverIndex].name;
+                // Defensive checks: validate indices before accessing participants array
+                const giver = (ex.giverIndex >= 0 && ex.giverIndex < participants.length)
+                    ? escapeHtml(participants[ex.giverIndex].name)
+                    : '[Invalid]';
+                const receiver = (ex.receiverIndex >= 0 && ex.receiverIndex < participants.length)
+                    ? escapeHtml(participants[ex.receiverIndex].name)
+                    : '[Invalid]';
                 return `
                     <div class="exclusion-item">
-                        <div class="exclusion-pair">${giver} → ${receiver}</div>
+                        <div class="exclusion-pair">
+                            <span class="exclusion-giver">${giver}</span>
+                            <span class="exclusion-separator"></span>
+                            <span class="exclusion-receiver">${receiver}</span>
+                        </div>
                         <button class="danger" onclick="removeExclusion(${index})">Remove</button>
                     </div>
                 `;
@@ -450,10 +542,10 @@
             const receiverSelect = document.getElementById('excludeReceiver');
 
             giverSelect.innerHTML = '<option value="">Select giver...</option>' +
-                participants.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+                participants.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join('');
 
             receiverSelect.innerHTML = '<option value="">Select receiver...</option>' +
-                participants.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+                participants.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join('');
         }
 
         function generatePairings() {
@@ -464,35 +556,20 @@
                 return;
             }
 
-            if (participants.length === 2) {
-                // Special case: only 2 participants
-                // Check if both directions are excluded (unidirectional check)
-                const exclusion1 = exclusions.find(ex => 
-                    ex.giverIndex === 0 && ex.receiverIndex === 1
-                );
-                const exclusion2 = exclusions.find(ex => 
-                    ex.giverIndex === 1 && ex.receiverIndex === 0
-                );
-                if (exclusion1 && exclusion2) {
-                    showError('Cannot generate pairings: the only two participants are excluded from each other');
-                    return;
-                }
+            // Clean up any invalid exclusions before generating pairings
+            cleanupInvalidExclusions();
+
+            // Early feasibility check: ensure a solution is possible
+            const feasibilityResult = checkPairingFeasibility();
+            if (!feasibilityResult.possible) {
+                showError(feasibilityResult.message);
+                return;
             }
 
-            let pairings = null;
-            let attempts = 0;
-            const maxAttempts = 1000;
+            // Use backtracking algorithm to generate valid pairings
+            const pairings = generatePairingBacktrack();
 
-            // Try to generate valid pairings
-            while (attempts < maxAttempts) {
-                pairings = generateRandomPairing();
-                if (isValidPairing(pairings)) {
-                    break;
-                }
-                attempts++;
-            }
-
-            if (attempts >= maxAttempts || !pairings) {
+            if (!pairings) {
                 showError('Could not generate valid pairings. Try removing some exclusions.');
                 return;
             }
@@ -500,64 +577,162 @@
             displayPairings(pairings);
         }
 
-        function generateRandomPairing() {
-            const receivers = [...Array(participants.length).keys()];
-            const pairings = [];
-
-            for (let i = 0; i < participants.length; i++) {
-                // Filter out invalid receivers
-                const validReceivers = receivers.filter(r => {
-                    // Can't pair with self
-                    if (r === i) return false;
-                    // Check exclusions (unidirectional: only check if this giver is excluded from this receiver)
-                    return !exclusions.some(ex => 
-                        ex.giverIndex === i && ex.receiverIndex === r
-                    );
-                });
-
-                if (validReceivers.length === 0) {
-                    return null; // No valid pairing possible
+        // Early feasibility check: determines if a valid pairing is possible
+        // Returns { possible: boolean, message: string }
+        function checkPairingFeasibility() {
+            // Build exclusion map for faster lookups
+            const exclusionMap = new Map();
+            exclusions.forEach(ex => {
+                // Validate exclusion indices
+                if (ex.giverIndex < 0 || ex.giverIndex >= participants.length ||
+                    ex.receiverIndex < 0 || ex.receiverIndex >= participants.length) {
+                    return; // Skip invalid exclusions
                 }
-
-                // Randomly select a receiver
-                const randomIndex = Math.floor(Math.random() * validReceivers.length);
-                const receiverIndex = validReceivers[randomIndex];
+                if (!exclusionMap.has(ex.giverIndex)) {
+                    exclusionMap.set(ex.giverIndex, new Set());
+                }
+                exclusionMap.get(ex.giverIndex).add(ex.receiverIndex);
+            });
+            
+            // Check each giver has at least one valid receiver
+            const impossibleGivers = [];
+            for (let g = 0; g < participants.length; g++) {
+                const excluded = exclusionMap.get(g) || new Set();
+                // Valid receivers = all participants - self - excluded
+                const validCount = participants.length - 1 - excluded.size;
                 
-                pairings.push({
-                    giver: participants[i],
-                    receiver: participants[receiverIndex]
-                });
-
-                // Remove selected receiver from available list
-                const receiverPos = receivers.indexOf(receiverIndex);
-                receivers.splice(receiverPos, 1);
+                if (validCount === 0) {
+                    impossibleGivers.push(participants[g].name);
+                }
             }
-
-            return pairings;
+            
+            if (impossibleGivers.length > 0) {
+                const names = impossibleGivers.join(', ');
+                const verb = impossibleGivers.length === 1 ? 'has' : 'have';
+                return {
+                    possible: false,
+                    message: `Cannot generate pairings: ${names} ${verb} no valid receivers. Please remove some exclusions.`
+                };
+            }
+            
+            return { possible: true, message: '' };
         }
 
-        function isValidPairing(pairings) {
-            if (!pairings) return false;
-
-            // Check that no one is paired with themselves
-            for (let i = 0; i < pairings.length; i++) {
-                if (pairings[i].giver === pairings[i].receiver) {
-                    return false;
+        // Backtracking algorithm for generating valid pairings
+        // Guarantees finding a solution if one exists, with no retry limit needed
+        function generatePairingBacktrack() {
+            // assignment[giverIndex] = receiverIndex: tracks which receiver each giver is assigned to
+            const assignment = new Array(participants.length).fill(-1);
+            // used[receiverIndex] = true: tracks which receivers have been assigned
+            const used = new Array(participants.length).fill(false);
+            // receiverToGiver[receiverIndex] = giverIndex: reverse lookup for O(1) mutual pair checking
+            const receiverToGiver = new Map();
+            
+            // Build exclusion map for faster lookups
+            const exclusionMap = new Map();
+            exclusions.forEach(ex => {
+                // Skip invalid exclusions
+                if (ex.giverIndex < 0 || ex.giverIndex >= participants.length ||
+                    ex.receiverIndex < 0 || ex.receiverIndex >= participants.length) {
+                    return;
                 }
+                if (!exclusionMap.has(ex.giverIndex)) {
+                    exclusionMap.set(ex.giverIndex, new Set());
+                }
+                exclusionMap.get(ex.giverIndex).add(ex.receiverIndex);
+            });
+            
+            // Pre-compute valid receivers for each giver (excluding self and exclusions)
+            // This avoids recalculating on every recursive call
+            const validReceiversMap = new Map();
+            for (let g = 0; g < participants.length; g++) {
+                const valid = [];
+                const excluded = exclusionMap.get(g) || new Set();
+                for (let r = 0; r < participants.length; r++) {
+                    if (r === g) continue; // Can't pair with self
+                    if (excluded.has(r)) continue; // Check exclusions
+                    valid.push(r);
+                }
+                validReceiversMap.set(g, valid);
             }
-
-            // Check exclusions
-            for (const exclusion of exclusions) {
-                const giver = participants[exclusion.giverIndex];
-                const receiver = participants[exclusion.receiverIndex];
+            
+            /**
+             * Checks if assigning receiverIndex to giverIndex would create a mutual pair
+             * A mutual pair occurs when: A gives to B AND B gives to A
+             * @param {number} giverIndex - The giver being assigned
+             * @param {number} receiverIndex - The receiver being assigned to the giver
+             * @returns {boolean} - True if this would create a mutual pair
+             */
+            function wouldCreateMutualPair(giverIndex, receiverIndex) {
+                // Check if receiverIndex is already assigned to give to giverIndex
+                // If so, assigning giverIndex -> receiverIndex would create: giverIndex -> receiverIndex AND receiverIndex -> giverIndex
+                return receiverToGiver.get(receiverIndex) === giverIndex;
+            }
+            
+            function backtrack(giverIndex) {
+                // Base case: all givers have been assigned
+                if (giverIndex === participants.length) {
+                    return true;
+                }
                 
-                const pairing = pairings.find(p => p.giver === giver);
-                if (pairing && pairing.receiver === receiver) {
+                // Get pre-computed valid receivers for this giver
+                // Filter out already used receivers and check for mutual pairs
+                const baseValidReceivers = validReceiversMap.get(giverIndex);
+                const validReceivers = [];
+                
+                for (const receiverIndex of baseValidReceivers) {
+                    // Already assigned to another giver
+                    if (used[receiverIndex]) continue;
+                    
+                    // Check if this would create a mutual pair (A->B and B->A)
+                    if (wouldCreateMutualPair(giverIndex, receiverIndex)) continue;
+                    
+                    validReceivers.push(receiverIndex);
+                }
+                
+                // If no valid receivers, backtrack
+                if (validReceivers.length === 0) {
                     return false;
                 }
+                
+                // Shuffle valid receivers for randomness
+                for (let i = validReceivers.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [validReceivers[i], validReceivers[j]] = [validReceivers[j], validReceivers[i]];
+                }
+                
+                // Try each valid receiver
+                for (const receiverIndex of validReceivers) {
+                    // Assign this receiver to the giver
+                    assignment[giverIndex] = receiverIndex;
+                    used[receiverIndex] = true;
+                    receiverToGiver.set(receiverIndex, giverIndex);
+                    
+                    // Recursively try to assign remaining givers
+                    if (backtrack(giverIndex + 1)) {
+                        return true;
+                    }
+                    
+                    // Backtrack: this assignment didn't work, try next
+                    assignment[giverIndex] = -1;
+                    used[receiverIndex] = false;
+                    receiverToGiver.delete(receiverIndex);
+                }
+                
+                // No valid assignment found for this giver
+                return false;
             }
-
-            return true;
+            
+            // Start backtracking from the first giver
+            if (!backtrack(0)) {
+                return null; // No solution exists
+            }
+            
+            // Convert assignment array to pairing objects
+            return assignment.map((receiverIndex, giverIndex) => ({
+                giver: participants[giverIndex],
+                receiver: participants[receiverIndex]
+            }));
         }
 
         function displayPairings(pairings) {
@@ -568,19 +743,29 @@
             // Store pairings for export
             currentPairings = pairings;
 
-            pairingsList.innerHTML = pairings.map(pair => `
+            pairingsList.innerHTML = pairings.map(pair => {
+                const giverName = escapeHtml(pair.giver.name);
+                const receiverName = escapeHtml(pair.receiver.name);
+                const phone = pair.receiver.phone && pair.receiver.phone !== 'N/A' 
+                    ? `<div class="pair-phone">Phone: ${escapeHtml(pair.receiver.phone)}</div>` 
+                    : '';
+                const wishlist = pair.receiver.wishlist 
+                    ? `<div class="pair-wishlist">Wishlist: <a href="${escapeHtmlAttr(pair.receiver.wishlist)}" target="_blank" rel="noopener noreferrer">${escapeHtml(pair.receiver.wishlist)}</a></div>` 
+                    : '';
+                return `
                 <div class="pair-item">
                     <div class="pair-info">
                         <div class="pair-names">
-                            <span class="pair-giver">${pair.giver.name}</span>
+                            <span class="pair-giver">${giverName}</span>
                             <span class="pair-separator"></span>
-                            <span class="pair-receiver">${pair.receiver.name}</span>
+                            <span class="pair-receiver">${receiverName}</span>
                         </div>
-                        ${pair.receiver.phone && pair.receiver.phone !== 'N/A' ? `<div class="pair-phone">Phone: ${pair.receiver.phone}</div>` : ''}
-                        ${pair.receiver.wishlist ? `<div class="pair-wishlist">Wishlist: <a href="${pair.receiver.wishlist}" target="_blank" rel="noopener noreferrer">${pair.receiver.wishlist}</a></div>` : ''}
+                        ${phone}
+                        ${wishlist}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             resultsDiv.classList.add('show');
             exportBtn.style.display = 'block';
@@ -619,6 +804,12 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // Revoke the object URL to prevent memory leaks
+            // Use setTimeout to ensure the download has started before revoking
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
         }
 
         function showError(message) {
