@@ -228,22 +228,6 @@
             font-weight: 700;
         }
 
-        .count-badge {
-            display: inline-block;
-            min-width: 24px;
-            padding: 1px 7px;
-            border-radius: 999px;
-            background: var(--border);
-            color: var(--muted);
-            font-size: 0.78em;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .tab[aria-selected="true"] .count-badge {
-            background: var(--surface-2);
-        }
-
         /* ---------- Panels ---------- */
 
         .panel:focus {
@@ -270,6 +254,17 @@
             margin-top: 28px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
+        }
+
+        .step-nav button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .chevron {
+            flex: none;
         }
 
         .step-nav-hint {
@@ -749,19 +744,10 @@
                 margin-bottom: 20px;
             }
 
-            /* Stack the count under the label so "Participants" fits a third of the screen */
             .tab {
-                flex-direction: column;
-                gap: 2px;
-                min-height: 54px;
+                gap: 4px;
                 padding: 6px 2px;
-                font-size: 0.85em;
-            }
-
-            .tab .count-badge {
-                font-size: 0.82em;
-                padding: 0 6px;
-                min-width: 22px;
+                font-size: 0.9em;
             }
 
             .tab-number {
@@ -872,12 +858,10 @@
             <button class="tab" role="tab" id="tab-people" aria-controls="panel-people" aria-selected="true" onclick="showStep('people')">
                 <span class="tab-number" aria-hidden="true">1</span>
                 <span class="tab-label">Participants</span>
-                <span class="count-badge" id="participantCount">0</span>
             </button>
             <button class="tab" role="tab" id="tab-exclusions" aria-controls="panel-exclusions" aria-selected="false" tabindex="-1" onclick="showStep('exclusions')">
                 <span class="tab-number" aria-hidden="true">2</span>
                 <span class="tab-label">Exclusions</span>
-                <span class="count-badge" id="exclusionCount">0</span>
             </button>
             <button class="tab" role="tab" id="tab-pairings" aria-controls="panel-pairings" aria-selected="false" tabindex="-1" onclick="showStep('pairings')">
                 <span class="tab-number" aria-hidden="true">3</span>
@@ -913,7 +897,7 @@
 
             <div class="step-nav">
                 <span class="step-nav-hint" id="peopleNavHint"></span>
-                <button onclick="showStep('exclusions')">Next<span class="nav-target">: Exclusions</span> →</button>
+                <button onclick="showStep('exclusions')"><span>Next<span class="nav-target">: Exclusions</span></span><svg class="chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
         </section>
 
@@ -947,8 +931,8 @@
             <div id="exclusionsList" class="list"></div>
 
             <div class="step-nav">
-                <button class="ghost" onclick="showStep('people')">← Back</button>
-                <button onclick="showStep('pairings')">Next<span class="nav-target">: Pairings</span> →</button>
+                <button class="ghost" onclick="showStep('people')"><svg class="chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back</span></button>
+                <button onclick="showStep('pairings')"><span>Next<span class="nav-target">: Pairings</span></span><svg class="chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
         </section>
 
@@ -993,7 +977,7 @@
             </div>
 
             <div class="step-nav">
-                <button class="ghost" onclick="showStep('exclusions')">← Back</button>
+                <button class="ghost" onclick="showStep('exclusions')"><svg class="chevron" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back</span></button>
             </div>
         </section>
     </main>
@@ -1366,7 +1350,6 @@
 
         function updateParticipantsList() {
             const list = document.getElementById('participantsList');
-            document.getElementById('participantCount').textContent = participants.length;
             updateGenerateState();
 
             if (participants.length === 0) {
@@ -1519,7 +1502,6 @@
 
         function updateExclusionsList() {
             const list = document.getElementById('exclusionsList');
-            document.getElementById('exclusionCount').textContent = exclusions.length;
             updateGenerateState();
             if (exclusions.length === 0) {
                 list.innerHTML = '<div class="empty-state">No exclusions. Anyone can draw anyone.</div>';
