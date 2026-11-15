@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<!-- saved from url=(0064)file:///home/ethandev/Documents/Projects/secret-santa/index.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
     <title>Gift Exchange Pairing Generator</title>
     <style>
+        :root {
+            --brand: #667eea;
+            --brand-dark: #5568d3;
+            --accent: #764ba2;
+            --accent-dark: #633a8a;
+            --text: #2d2a3e;
+            --muted: #6b6880;
+            --border: #e4e2ee;
+            --surface: #ffffff;
+            --surface-2: #f7f6fb;
+            --success: #2e7d32;
+            --success-bg: #eaf6ec;
+            --danger: #d64545;
+            --danger-dark: #b83232;
+            --danger-bg: #fdeeee;
+            --warn: #f0b429;
+            --warn-bg: #fff8e6;
+            --radius: 12px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,343 +36,1205 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            padding: 32px 16px;
+            color: var(--text);
+            line-height: 1.45;
+            -webkit-text-size-adjust: 100%;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 760px;
             margin: 0 auto;
-            background: white;
+            background: var(--surface);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
+            padding: 36px 40px;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 20px;
-            }
+        /* ---------- Header ---------- */
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 24px;
         }
 
         h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2.5em;
+            color: var(--brand);
+            font-size: 2.2em;
+            line-height: 1.15;
+            margin-bottom: 8px;
         }
 
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section-title {
-            font-size: 1.3em;
-            color: #764ba2;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .input-group {
+        .session-bar {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            justify-content: center;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 4px 12px;
+            margin-top: 12px;
+            font-size: 0.85em;
+            color: var(--muted);
         }
 
-        @media (max-width: 768px) {
-            .input-group {
-                flex-direction: column;
-            }
-        }
-
-        .input-group button {
-            flex-shrink: 0;
-        }
-
-        input, select {
-            flex: 1;
-            padding: 12px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+        /* ---------- Buttons ---------- */
 
         button {
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
+            font: inherit;
             font-weight: 600;
-            min-width: max-content;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            min-height: 44px;
+            padding: 10px 20px;
+            background: var(--brand);
+            color: #fff;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        summary:focus-visible {
+            outline: 3px solid rgba(102, 126, 234, 0.45);
+            outline-offset: 2px;
         }
 
         button.secondary {
-            background: #764ba2;
+            background: var(--accent);
         }
 
-        button.secondary:hover {
-            background: #633a8a;
-        }
-
-        button.danger {
+        button.ghost {
             background: transparent;
-            color: #e74c3c;
-            padding: 0;
+            color: var(--brand);
+            border: 2px solid var(--border);
         }
 
-        button.danger:hover {
-            color: #c0392b;
+        button.text-button {
+            background: transparent;
+            color: var(--brand);
+            min-height: 36px;
+            padding: 6px 8px;
+            font-size: inherit;
         }
 
-        .participants-list {
-            margin-top: 15px;
+        button.text-button.danger {
+            color: var(--danger);
+        }
+
+        button:disabled {
+            background: #c9c7d6;
+            color: #fff;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        button.ghost:disabled {
+            background: transparent;
+            color: #b4b2c3;
+        }
+
+        /* Hover effects only on devices that really hover, so they don't stick after a tap */
+        @media (hover: hover) {
+            button:not(:disabled):hover {
+                background: var(--brand-dark);
+                transform: translateY(-1px);
+            }
+            button.secondary:not(:disabled):hover {
+                background: var(--accent-dark);
+            }
+            button.ghost:not(:disabled):hover {
+                background: var(--surface-2);
+                border-color: var(--brand);
+            }
+            button.text-button:not(:disabled):hover {
+                background: transparent;
+                color: var(--brand-dark);
+                text-decoration: underline;
+                transform: none;
+            }
+            button.text-button.danger:not(:disabled):hover {
+                color: var(--danger-dark);
+            }
+            button.tab:not(:disabled):hover {
+                background: rgba(102, 126, 234, 0.08);
+                color: var(--brand);
+                transform: none;
+            }
+            button.tab[aria-selected="true"]:not(:disabled):hover {
+                background: var(--surface);
+                color: var(--accent);
+            }
+        }
+
+        button:not(:disabled):active {
+            transform: translateY(0);
+        }
+
+        /* ---------- Tabs ---------- */
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            padding: 6px;
+            margin-bottom: 24px;
+            background: var(--surface-2);
+            border-radius: 14px;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 48px;
+            padding: 8px 10px;
+            background: transparent;
+            color: var(--muted);
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+        .tab[aria-selected="true"] {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(45, 42, 62, 0.12);
+        }
+
+        .tab-number {
+            flex: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--muted);
+            font-size: 0.85em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tab[aria-selected="true"] .tab-number {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .tab-check {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .count-badge {
+            display: inline-block;
+            min-width: 24px;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: var(--border);
+            color: var(--muted);
+            font-size: 0.78em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .tab[aria-selected="true"] .count-badge {
+            background: var(--surface-2);
+        }
+
+        /* ---------- Panels ---------- */
+
+        .panel:focus {
+            outline: none;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .step-hint {
+            color: var(--muted);
+            font-size: 0.92em;
+            margin: 0 0 16px;
+        }
+
+        .step-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .step-nav-hint {
+            color: var(--muted);
+            font-size: 0.88em;
+            align-self: center;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+        }
+
+        /* ---------- Forms ---------- */
+
+        .form-grid {
+            display: grid;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .participant-form {
+            grid-template-columns: 1.1fr 1fr 1.4fr auto;
+        }
+
+        .exclusion-form {
+            grid-template-columns: 1fr auto 1fr;
+        }
+
+        .exclusion-form .form-row-end {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .field label,
+        .field-label {
+            display: block;
+            font-size: 0.82em;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .optional {
+            font-weight: 400;
+        }
+
+        .connector {
+            color: var(--muted);
+            font-weight: 600;
+            padding-bottom: 12px;
+            text-align: center;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 46px;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font: inherit;
+            font-size: 16px; /* 16px stops iOS zooming in on focus */
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+        }
+
+        .checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox input {
+            width: 20px;
+            height: 20px;
+            min-height: 0;
+            flex: none;
+            accent-color: var(--brand);
+            cursor: pointer;
+        }
+
+        /* ---------- Messages ---------- */
+
+        .error,
+        .success {
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+        }
+
+        .error {
+            background: var(--danger-bg);
+            color: var(--danger-dark);
+            border-left: 4px solid var(--danger);
+        }
+
+        .success {
+            background: var(--success-bg);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        #importMessage > div {
+            margin: 0 0 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 18px;
+            font-style: italic;
+            background: var(--surface-2);
+            border-radius: var(--radius);
+        }
+
+        /* ---------- Participant list ---------- */
+
+        .list {
+            margin-top: 16px;
+            display: grid;
+            /* minmax(0, 1fr) stops long one-line content from widening the page */
+            grid-template-columns: minmax(0, 1fr);
+            gap: 10px;
         }
 
         .participant-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            margin-bottom: 15px;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border-radius: var(--radius);
+        }
+
+        .avatar {
+            flex: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .participant-info {
             flex: 1;
+            min-width: 0;
         }
 
         .participant-name {
             font-weight: 600;
-            color: #333;
         }
 
-        .participant-phone {
-            font-size: 0.9em;
+        .participant-detail {
+            font-size: 0.88em;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .participant-wishlist {
-            font-size: 0.9em;
-            margin-top: 4px;
-        }
-
-        .participant-wishlist a {
-            color: #667eea;
+        .participant-detail a,
+        .pair-wishlist a {
+            color: var(--brand);
             text-decoration: none;
         }
 
-        .participant-wishlist a:hover {
+        .participant-detail a:hover,
+        .pair-wishlist a:hover {
             text-decoration: underline;
         }
 
-        .exclusions-list {
-            margin-top: 15px;
+        .participant-actions {
+            display: flex;
+            gap: 4px;
+            flex: none;
         }
+
+        .participant-actions button {
+            min-height: 40px;
+            padding: 6px 12px;
+            font-size: 0.92em;
+        }
+
+        .participant-item.editing {
+            display: block;
+            background: var(--surface);
+            border: 2px solid var(--brand);
+        }
+
+        .edit-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr 1.4fr;
+            gap: 12px;
+        }
+
+        .edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        /* ---------- Exclusion list ---------- */
 
         .exclusion-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: #fff3cd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ffc107;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--warn-bg);
+            border-left: 4px solid var(--warn);
+            border-radius: var(--radius);
         }
 
         .exclusion-pair {
             flex: 1;
-            display: flex;
-            align-items: center;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
-        .exclusion-separator {
-            display: inline-block;
-            margin: 0 12px;
-            font-size: 1.2em;
-            vertical-align: middle;
+        .exclusion-arrow {
+            margin: 0 8px;
+            color: var(--muted);
         }
 
-        .exclusion-separator::before {
-            content: '➜';
+        .exclusion-note {
+            font-size: 0.82em;
+            color: var(--muted);
+            margin-left: 6px;
         }
 
-        .exclusion-receiver {
-            font-size: 1.1em;
+        /* ---------- Generate ---------- */
+
+        .generate-btn {
+            width: 100%;
+            min-height: 56px;
+            font-size: 1.15em;
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
         }
+
+        .generate-hint {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+
+        /* ---------- Results ---------- */
 
         .results {
-            margin-top: 30px;
             display: none;
-        }
-
-        @media (max-width: 768px) {
-            .results > div {
-                flex-direction: column;
-                align-items: normal !important;
-            }
         }
 
         .results.show {
             display: block;
         }
 
-        .pair-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
+        .progress {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            margin: 8px 0 16px;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: var(--success);
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+
+        .sent-progress {
+            font-size: 0.9em;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .message-template {
+            margin-bottom: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .message-template summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-weight: 600;
+            color: var(--brand);
+            list-style-position: inside;
+        }
+
+        .message-template[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .message-template-body {
+            padding: 14px;
+        }
+
+        .message-template textarea {
+            width: 100%;
+            min-height: 96px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font: inherit;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .message-template .template-hint {
+            font-size: 0.85em;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .message-template .template-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+
+        .pair-item {
+            padding: 14px 16px;
+            background: var(--surface-2);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--brand);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .pair-item.sent {
+            border-left-color: var(--success);
+            background: var(--success-bg);
         }
 
         .pair-info {
             flex: 1;
+            min-width: 0;
         }
 
         .pair-names {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
+            gap: 2px 10px;
+            font-size: 1.08em;
         }
 
         .pair-giver {
-            font-weight: 600;
-            color: #667eea;
-            font-size: 1.1em;
-        }
-
-        .pair-separator {
-            display: inline-block;
-            margin: 0 12px;
-            font-size: 1.2em;
-            vertical-align: middle;
+            font-weight: 700;
+            color: var(--brand);
         }
 
         .pair-separator::before {
             content: '➜';
+            color: var(--muted);
         }
 
         .pair-receiver {
-            font-size: 1.1em;
+            font-weight: 600;
         }
 
-        .pair-phone {
-            font-size: 0.9em;
-        }
-
+        .pair-phone,
         .pair-wishlist {
-            font-size: 0.9em;
-            margin-top: 5px;
-            word-break: break-word;
-            overflow-wrap: break-word;
+            font-size: 0.88em;
+            color: var(--muted);
+            margin-top: 2px;
+            overflow-wrap: anywhere;
         }
 
-        .pair-wishlist a {
-            color: #667eea;
-            text-decoration: none;
+        .pair-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: none;
         }
 
-        .pair-wishlist a:hover {
-            text-decoration: underline;
+        .pair-actions button {
+            min-height: 40px;
+            padding: 8px 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
         }
 
-        .generate-btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
+        .sent-toggle {
+            font-size: 0.92em;
+            margin-right: 4px;
+        }
+
+        .save-card {
             margin-top: 20px;
+            padding: 16px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .empty-state {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
+        .save-card p {
+            flex: 1;
+            color: var(--muted);
+            font-size: 0.92em;
         }
 
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border-left: 4px solid #c33;
+        .save-card strong {
+            display: block;
+            color: var(--text);
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        /* ---------- Phones ---------- */
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 10px;
+            }
+
+            .container {
+                padding: 24px 16px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+
+            .tabs {
+                gap: 4px;
+                padding: 4px;
+                margin-bottom: 20px;
+            }
+
+            /* Stack the count under the label so "Participants" fits a third of the screen */
+            .tab {
+                flex-direction: column;
+                gap: 2px;
+                min-height: 54px;
+                padding: 6px 2px;
+                font-size: 0.85em;
+            }
+
+            .tab .count-badge {
+                font-size: 0.82em;
+                padding: 0 6px;
+                min-width: 22px;
+            }
+
+            .tab-number {
+                display: none;
+            }
+
+            .step-nav button {
+                flex: 1;
+            }
+
+            .step-nav-hint,
+            .nav-target {
+                display: none;
+            }
+
+            /* Keep the header short so each tab starts near the top */
+            .app-header {
+                margin-bottom: 16px;
+            }
+
+            .session-bar {
+                margin-top: 4px;
+                gap: 0 8px;
+            }
+
+            .participant-form,
+            .exclusion-form,
+            .edit-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .participant-form button {
+                width: 100%;
+            }
+
+            .connector {
+                padding: 0;
+                text-align: left;
+                margin: -4px 0;
+            }
+
+            .exclusion-form .form-row-end {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .exclusion-form .form-row-end button {
+                width: 100%;
+            }
+
+            .participant-item {
+                align-items: flex-start;
+            }
+
+            .participant-actions {
+                gap: 0;
+            }
+
+            .edit-actions button {
+                flex: 1;
+            }
+
+            .pair-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pair-actions {
+                flex-wrap: wrap;
+            }
+
+            .pair-actions button {
+                flex: 1;
+                min-width: 0;
+                max-width: none;
+                min-height: 44px;
+            }
+
+            /* Text is the main action, and its label includes the giver's name */
+            .pair-actions button:last-child {
+                flex: 2;
+            }
+
+            .sent-toggle {
+                flex-basis: 100%;
+                min-height: 40px;
+            }
+
+            .save-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Gift Exchange Pairing Generator</h1>
+    <main class="container">
+        <header class="app-header">
+            <h1>Gift Exchange</h1>
+            <div class="session-bar">
+                <span id="sessionStatus">Progress is saved in this browser.</span>
+                <button class="text-button danger" onclick="startOver()">Start over</button>
+            </div>
+        </header>
 
-        <div class="section">
-            <h2 class="section-title">Add Participants</h2>
-            <div class="input-group">
-                <input type="text" id="nameInput" placeholder="Name*" maxlength="100">
-                <input type="tel" id="phoneInput" placeholder="(XXX) XXX-XXXX" maxlength="20">
-                <input type="url" id="wishlistInput" placeholder="Wishlist URL" maxlength="2048">
+        <nav class="tabs" role="tablist" aria-label="Steps">
+            <button class="tab" role="tab" id="tab-people" aria-controls="panel-people" aria-selected="true" onclick="showStep('people')">
+                <span class="tab-number" aria-hidden="true">1</span>
+                <span class="tab-label">Participants</span>
+                <span class="count-badge" id="participantCount">0</span>
+            </button>
+            <button class="tab" role="tab" id="tab-exclusions" aria-controls="panel-exclusions" aria-selected="false" tabindex="-1" onclick="showStep('exclusions')">
+                <span class="tab-number" aria-hidden="true">2</span>
+                <span class="tab-label">Exclusions</span>
+                <span class="count-badge" id="exclusionCount">0</span>
+            </button>
+            <button class="tab" role="tab" id="tab-pairings" aria-controls="panel-pairings" aria-selected="false" tabindex="-1" onclick="showStep('pairings')">
+                <span class="tab-number" aria-hidden="true">3</span>
+                <span class="tab-label">Pairings</span>
+                <span class="tab-check" id="pairingsDone" aria-hidden="true" hidden>✓</span>
+            </button>
+        </nav>
+
+        <section class="panel" role="tabpanel" id="panel-people" aria-labelledby="tab-people" tabindex="-1">
+            <h2 class="panel-title">Who's taking part?</h2>
+            <p class="step-hint">Add everyone in the exchange. A phone number lets you text them their match.
+                Did this last year? <button class="text-button" onclick="document.getElementById('importFile').click()">Import last year's CSV</button></p>
+            <input type="file" id="importFile" accept=".csv,text/csv" hidden>
+            <div id="importMessage" aria-live="polite"></div>
+
+            <div class="form-grid participant-form">
+                <div class="field">
+                    <label for="nameInput">Name</label>
+                    <input type="text" id="nameInput" maxlength="100" autocomplete="off" autocapitalize="words" enterkeyhint="done">
+                </div>
+                <div class="field">
+                    <label for="phoneInput">Phone <span class="optional">(optional)</span></label>
+                    <input type="tel" id="phoneInput" placeholder="(555) 555-5555" maxlength="20" autocomplete="off" inputmode="tel" enterkeyhint="done">
+                </div>
+                <div class="field">
+                    <label for="wishlistInput">Wishlist link <span class="optional">(optional)</span></label>
+                    <input type="url" id="wishlistInput" placeholder="https://" maxlength="2048" autocomplete="off" enterkeyhint="done">
+                </div>
                 <button class="secondary" onclick="addParticipant()">Add</button>
             </div>
-            <div id="participantsList" class="participants-list"><div class="empty-state">No participants added yet</div></div>
-        </div>
+            <div id="participantError" aria-live="polite"></div>
+            <div id="participantsList" class="list"></div>
 
-        <div class="section">
-            <h2 class="section-title">Exclude Pairs</h2>
-            <div class="input-group">
-                <select id="excludeGiver">
-                    <option value="">Select giver...</option>
-                </select>
-                <select id="excludeReceiver">
-                    <option value="">Select receiver...</option>
-                </select>
-                <button class="secondary" onclick="addExclusion()">Exclude</button>
+            <div class="step-nav">
+                <span class="step-nav-hint" id="peopleNavHint"></span>
+                <button onclick="showStep('exclusions')">Next<span class="nav-target">: Exclusions</span> →</button>
             </div>
-            <div id="exclusionsList" class="exclusions-list"><div class="empty-state">No exclusions set</div></div>
-        </div>
+        </section>
 
-        <button class="generate-btn" onclick="generatePairings()">Generate Pairings</button>
+        <section class="panel" role="tabpanel" id="panel-exclusions" aria-labelledby="tab-exclusions" tabindex="-1" hidden>
+            <h2 class="panel-title">Any exclusions?</h2>
+            <p class="step-hint">Optional. Stop someone from drawing a particular person, like their partner.</p>
 
-        <div id="errorMessage"></div>
-
-        <div id="results" class="results">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 20px;">
-                <h2 class="section-title" style="margin-bottom: 0; width: 100%;">Generated Pairings</h2>
-                <button class="secondary" onclick="exportPairingsToCSV()" id="exportBtn" style="display: none;">Export to CSV</button>
+            <div class="form-grid exclusion-form">
+                <div class="field">
+                    <label for="excludeGiver">Person</label>
+                    <select id="excludeGiver">
+                        <option value="">Choose…</option>
+                    </select>
+                </div>
+                <div class="connector">can't draw</div>
+                <div class="field">
+                    <label for="excludeReceiver">Person</label>
+                    <select id="excludeReceiver">
+                        <option value="">Choose…</option>
+                    </select>
+                </div>
+                <div class="form-row-end">
+                    <label class="checkbox">
+                        <input type="checkbox" id="excludeBoth">
+                        Both ways (neither can draw the other)
+                    </label>
+                    <button class="secondary" onclick="addExclusion()">Add exclusion</button>
+                </div>
             </div>
-            <div id="pairingsList"></div>
-        </div>
-    </div>
+            <div id="exclusionError" aria-live="polite"></div>
+            <div id="exclusionsList" class="list"></div>
+
+            <div class="step-nav">
+                <button class="ghost" onclick="showStep('people')">← Back</button>
+                <button onclick="showStep('pairings')">Next<span class="nav-target">: Pairings</span> →</button>
+            </div>
+        </section>
+
+        <section class="panel" role="tabpanel" id="panel-pairings" aria-labelledby="tab-pairings" tabindex="-1" hidden>
+            <div id="drawArea">
+                <h2 class="panel-title">Draw names</h2>
+                <p class="step-hint" id="drawSummary"></p>
+                <button class="generate-btn" id="generateBtn" onclick="generatePairings()">Generate Pairings</button>
+                <p class="generate-hint" id="generateHint"></p>
+            </div>
+            <div id="generateError" aria-live="polite"></div>
+
+            <div id="results" class="results">
+                <div class="results-header">
+                    <h2 class="panel-title">Send everyone their match</h2>
+                    <button class="text-button" onclick="generatePairings()">↻ Draw again</button>
+                </div>
+                <div class="progress">
+                    <div class="progress-track"><div class="progress-fill" id="sentBar"></div></div>
+                    <span id="sentProgress" class="sent-progress"></span>
+                </div>
+
+                <details class="message-template">
+                    <summary>Customize the message</summary>
+                    <div class="message-template-body">
+                        <label for="messageTemplate" class="visually-hidden">Message to each giver</label>
+                        <textarea id="messageTemplate" maxlength="1000"></textarea>
+                        <p class="template-hint">Use {giver}, {receiver} and {wishlist} as placeholders. A line with {wishlist} is left out when the receiver has no wishlist.</p>
+                        <div class="template-actions">
+                            <button class="text-button" onclick="resetMessageTemplate()">Reset to default</button>
+                        </div>
+                    </div>
+                </details>
+
+                <div id="sendError" aria-live="polite"></div>
+                <div id="pairingsList" class="list"></div>
+
+                <div class="save-card">
+                    <p><strong>Save these results for next year</strong>Import the file next year and nobody will draw the same person again.</p>
+                    <button class="ghost" onclick="exportPairingsToCSV()" id="exportBtn">Download CSV</button>
+                </div>
+            </div>
+
+            <div class="step-nav">
+                <button class="ghost" onclick="showStep('exclusions')">← Back</button>
+            </div>
+        </section>
+    </main>
 
     <script>
         let participants = [];
         let exclusions = [];
         let currentPairings = [];
+        // Snapshot of exclusions (by name) at the time pairings were generated,
+        // so the export stays consistent even if the lists are edited afterwards
+        let currentExclusions = [];
+        // sentStatus[i] is true once the message for currentPairings[i] has been sent
+        let sentStatus = [];
+
+        const DEFAULT_MESSAGE_TEMPLATE =
+            "Hi {giver}! You're buying a gift for {receiver} in this year's gift exchange.\nWishlist: {wishlist}";
+        let messageTemplate = DEFAULT_MESSAGE_TEMPLATE;
+
+        const STEPS = ['people', 'exclusions', 'pairings'];
+        let activeStep = 'people';
+
+        // ---- Tabs ----
+
+        function showStep(step, { focus = true } = {}) {
+            if (!STEPS.includes(step)) return;
+            activeStep = step;
+            STEPS.forEach(name => {
+                const selected = name === step;
+                const tab = document.getElementById(`tab-${name}`);
+                tab.setAttribute('aria-selected', String(selected));
+                tab.tabIndex = selected ? 0 : -1;
+                document.getElementById(`panel-${name}`).hidden = !selected;
+            });
+            clearError();
+            if (focus) {
+                // After tapping Next at the bottom of a long list, jump back up to the tabs
+                const tabs = document.querySelector('.tabs');
+                if (tabs.getBoundingClientRect().top < 0) {
+                    tabs.scrollIntoView({ block: 'start' });
+                }
+                document.getElementById(`panel-${step}`).focus({ preventScroll: true });
+            }
+            saveState();
+        }
+
+        // Left/Right/Home/End move between tabs (standard tab keyboard pattern)
+        function handleTabKeydown(e) {
+            const index = STEPS.indexOf(activeStep);
+            let next = null;
+            if (e.key === 'ArrowRight') next = STEPS[(index + 1) % STEPS.length];
+            else if (e.key === 'ArrowLeft') next = STEPS[(index - 1 + STEPS.length) % STEPS.length];
+            else if (e.key === 'Home') next = STEPS[0];
+            else if (e.key === 'End') next = STEPS[STEPS.length - 1];
+            if (!next) return;
+            e.preventDefault();
+            showStep(next, { focus: false });
+            document.getElementById(`tab-${next}`).focus();
+        }
+
+        // ---- Saving and restoring progress (localStorage) ----
+
+        const STORAGE_KEY = 'giftExchangeGenerator.v1';
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    participants,
+                    exclusions,
+                    currentPairings,
+                    currentExclusions,
+                    sentStatus,
+                    messageTemplate,
+                    activeStep
+                }));
+            } catch (e) {
+                // Storage may be unavailable (private browsing, blocked site data); the app still works
+            }
+        }
+
+        // Returns true if a saved session with participants or pairings was restored
+        function loadState() {
+            let data;
+            try {
+                data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            } catch (e) {
+                return false;
+            }
+            if (!data || typeof data !== 'object') return false;
+
+            const isPerson = p => p && typeof p.name === 'string' && p.name.trim() !== '';
+            const cleanPerson = p => ({
+                name: p.name,
+                phone: typeof p.phone === 'string' && p.phone ? p.phone : 'N/A',
+                wishlist: typeof p.wishlist === 'string' && p.wishlist ? p.wishlist : null
+            });
+            const isPair = x => x && isPerson(x.giver) && isPerson(x.receiver);
+            const cleanPair = x => ({ giver: cleanPerson(x.giver), receiver: cleanPerson(x.receiver) });
+
+            if (Array.isArray(data.participants)) {
+                participants = data.participants.filter(isPerson).map(cleanPerson);
+            }
+            if (Array.isArray(data.exclusions)) {
+                exclusions = data.exclusions
+                    .filter(ex => ex && Number.isInteger(ex.giverIndex) && Number.isInteger(ex.receiverIndex))
+                    .map(ex => ({ giverIndex: ex.giverIndex, receiverIndex: ex.receiverIndex }))
+                    .filter(ex => ex.giverIndex >= 0 && ex.giverIndex < participants.length &&
+                                  ex.receiverIndex >= 0 && ex.receiverIndex < participants.length &&
+                                  ex.giverIndex !== ex.receiverIndex);
+            }
+            if (Array.isArray(data.currentPairings) && data.currentPairings.every(isPair)) {
+                currentPairings = data.currentPairings.map(cleanPair);
+                currentExclusions = Array.isArray(data.currentExclusions)
+                    ? data.currentExclusions.filter(isPair).map(cleanPair)
+                    : [];
+                sentStatus = currentPairings.map((_, i) =>
+                    Array.isArray(data.sentStatus) && data.sentStatus[i] === true);
+            }
+            if (typeof data.messageTemplate === 'string') {
+                messageTemplate = data.messageTemplate;
+            }
+            if (STEPS.includes(data.activeStep)) {
+                activeStep = data.activeStep;
+            }
+            return participants.length > 0 || currentPairings.length > 0;
+        }
+
+        function startOver() {
+            if (!confirm('Start over? This clears all participants, exclusions, pairings and sent status.')) {
+                return;
+            }
+            participants = [];
+            exclusions = [];
+            currentPairings = [];
+            currentExclusions = [];
+            sentStatus = [];
+            editingIndex = -1;
+            hideResults();
+            updateParticipantsList();
+            updateExclusionDropdowns();
+            updateExclusionsList();
+            clearError();
+            document.getElementById('importMessage').innerHTML = '';
+            document.getElementById('sessionStatus').textContent =
+                'Progress is saved in this browser.';
+            showStep('people');
+        }
+
+        function hideResults() {
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('pairingsList').innerHTML = '';
+            document.getElementById('drawArea').hidden = false;
+            document.getElementById('pairingsDone').hidden = true;
+        }
+
+        function resetMessageTemplate() {
+            messageTemplate = DEFAULT_MESSAGE_TEMPLATE;
+            document.getElementById('messageTemplate').value = messageTemplate;
+            saveState();
+        }
+
+        // ---- Messaging ----
+
+        function buildMessage(pair) {
+            const values = {
+                giver: pair.giver.name,
+                receiver: pair.receiver.name,
+                wishlist: pair.receiver.wishlist || ''
+            };
+            return messageTemplate
+                .split('\n')
+                // Drop lines whose {wishlist} would be empty
+                .filter(line => !(line.includes('{wishlist}') && !values.wishlist))
+                .join('\n')
+                .replace(/\{(giver|receiver|wishlist)\}/g, (_, key) => values[key])
+                .trim();
+        }
+
+        // Convert a stored phone number into the form an sms: link needs.
+        // 10-digit numbers are treated as US numbers.
+        function smsNumber(phone) {
+            if (!phone || phone === 'N/A') return '';
+            const digits = phone.replace(/\D/g, '');
+            if (digits.length === 10) return '+1' + digits;
+            if (digits.length === 11 && digits[0] === '1') return '+' + digits;
+            return digits;
+        }
+
+        function textGiver(index) {
+            const pair = currentPairings[index];
+            if (!pair) return;
+            const number = smsNumber(pair.giver.phone);
+            if (!number) return;
+            // "?&body=" is understood by both iOS and Android messaging apps
+            const url = `sms:${number}?&body=${encodeURIComponent(buildMessage(pair))}`;
+            setSent(index, true);
+            window.location.href = url;
+        }
+
+        async function copyMessage(index) {
+            const pair = currentPairings[index];
+            if (!pair) return;
+            const text = buildMessage(pair);
+            let copied = false;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    copied = true;
+                }
+            } catch (e) {
+                // Fall through to the older copy method
+            }
+            if (!copied) {
+                // Works when the page is opened as a local file, where the Clipboard API isn't available
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+                document.body.removeChild(textarea);
+            }
+            if (!copied) {
+                showError('Could not copy automatically. Here is the message:\n' + text, 'send');
+                return;
+            }
+            setSent(index, true);
+            const button = document.querySelector(`button[data-copy-index="${index}"]`);
+            if (button) {
+                button.textContent = 'Copied!';
+                setTimeout(() => { button.textContent = 'Copy'; }, 1500);
+            }
+        }
+
+        function setSent(index, value) {
+            if (index < 0 || index >= currentPairings.length) return;
+            sentStatus[index] = value;
+            renderPairings();
+            saveState();
+        }
 
         // Escape HTML to prevent XSS attacks
         function escapeHtml(text) {
@@ -380,29 +1263,10 @@
             const phone = phoneInput.value.trim();
             const wishlist = wishlistInput.value.trim();
 
-            if (!name) {
-                showError('Please enter a name');
-                return;
-            }
-
-            // Validate input lengths
-            if (name.length > 100) {
-                showError('Name must be 100 characters or less');
-                return;
-            }
-
-            if (phone.length > 20) {
-                showError('Phone number must be 20 characters or less');
-                return;
-            }
-
-            if (wishlist && wishlist.length > 2048) {
-                showError('Wishlist URL must be 2048 characters or less');
-                return;
-            }
-
-            if (participants.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                showError('This name is already added');
+            const validationError = validateParticipant(name, phone, wishlist, -1);
+            if (validationError) {
+                showError(validationError, 'participant');
+                if (!name) nameInput.focus();
                 return;
             }
 
@@ -413,9 +1277,77 @@
             updateParticipantsList();
             updateExclusionDropdowns();
             clearError();
+            saveState();
+            // Ready for the next person
+            nameInput.focus();
+        }
+
+        // Returns an error message, or '' if valid.
+        // ignoreIndex lets the participant being edited keep their own name.
+        function validateParticipant(name, phone, wishlist, ignoreIndex) {
+            if (!name) return 'Please enter a name';
+            if (name.length > 100) return 'Name must be 100 characters or less';
+            if (phone.length > 20) return 'Phone number must be 20 characters or less';
+            if (wishlist && wishlist.length > 2048) return 'Wishlist URL must be 2048 characters or less';
+            if (participants.some((p, i) => i !== ignoreIndex && p.name.toLowerCase() === name.toLowerCase())) {
+                return 'This name is already added';
+            }
+            return '';
+        }
+
+        // Index of the participant currently being edited, or -1
+        let editingIndex = -1;
+
+        function editParticipant(index) {
+            editingIndex = index;
+            updateParticipantsList();
+            const nameField = document.getElementById('editName');
+            nameField.focus();
+            nameField.setSelectionRange(nameField.value.length, nameField.value.length);
+        }
+
+        function cancelEditParticipant() {
+            editingIndex = -1;
+            updateParticipantsList();
+        }
+
+        function saveParticipant() {
+            const index = editingIndex;
+            if (index < 0 || index >= participants.length) return;
+
+            const name = document.getElementById('editName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const wishlist = document.getElementById('editWishlist').value.trim();
+
+            const validationError = validateParticipant(name, phone, wishlist, index);
+            if (validationError) {
+                document.getElementById('editError').innerHTML =
+                    `<div class="error">${escapeHtml(validationError)}</div>`;
+                return;
+            }
+
+            // Replace rather than mutate, so already-generated pairings keep the
+            // details they were generated with. Exclusions refer to participants by
+            // index, so they follow the edit automatically.
+            participants[index] = { name, phone: phone || 'N/A', wishlist: wishlist || null };
+            editingIndex = -1;
+            updateParticipantsList();
+            updateExclusionDropdowns();
+            updateExclusionsList();
+            clearError();
+            saveState();
         }
 
         function removeParticipant(index) {
+            const person = participants[index];
+            if (!person) return;
+            const linkedExclusions = exclusions.filter(ex =>
+                ex.giverIndex === index || ex.receiverIndex === index).length;
+            if (linkedExclusions > 0 && !confirm(
+                `Remove ${person.name}? Their ${linkedExclusions} exclusion${linkedExclusions === 1 ? '' : 's'} will be removed too.`)) {
+                return;
+            }
+            editingIndex = -1;
             participants.splice(index, 1);
             // Remove exclusions involving this participant
             exclusions = exclusions.filter(ex => 
@@ -429,23 +1361,89 @@
             updateParticipantsList();
             updateExclusionDropdowns();
             updateExclusionsList();
+            saveState();
         }
 
         function updateParticipantsList() {
             const list = document.getElementById('participantsList');
+            document.getElementById('participantCount').textContent = participants.length;
+            updateGenerateState();
+
             if (participants.length === 0) {
-                list.innerHTML = '<div class="empty-state">No participants added yet</div>';
+                list.innerHTML = '<div class="empty-state">Nobody added yet. Start with the first name above.</div>';
                 return;
             }
 
-            list.innerHTML = participants.map((p, index) => `
+            list.innerHTML = participants.map((p, index) => {
+                const phoneValue = p.phone && p.phone !== 'N/A' ? p.phone : '';
+
+                if (index === editingIndex) {
+                    return `
+                <div class="participant-item editing">
+                    <div class="edit-grid">
+                        <div class="field">
+                            <label for="editName">Name</label>
+                            <input type="text" id="editName" maxlength="100" autocomplete="off" autocapitalize="words" value="${escapeHtmlAttr(p.name)}">
+                        </div>
+                        <div class="field">
+                            <label for="editPhone">Phone <span class="optional">(optional)</span></label>
+                            <input type="tel" id="editPhone" placeholder="(555) 555-5555" maxlength="20" autocomplete="off" inputmode="tel" value="${escapeHtmlAttr(phoneValue)}">
+                        </div>
+                        <div class="field">
+                            <label for="editWishlist">Wishlist link <span class="optional">(optional)</span></label>
+                            <input type="url" id="editWishlist" placeholder="https://" maxlength="2048" autocomplete="off" value="${escapeHtmlAttr(p.wishlist || '')}">
+                        </div>
+                    </div>
+                    <div id="editError" aria-live="polite"></div>
+                    <div class="edit-actions">
+                        <button class="ghost" onclick="cancelEditParticipant()">Cancel</button>
+                        <button class="secondary" onclick="saveParticipant()">Save</button>
+                    </div>
+                </div>`;
+                }
+
+                const details = [];
+                if (phoneValue) details.push(escapeHtml(phoneValue));
+                if (p.wishlist) details.push(wishlistLink(p.wishlist));
+                const detailHtml = details.length
+                    ? details.map(d => `<div class="participant-detail">${d}</div>`).join('')
+                    : '<div class="participant-detail">No phone or wishlist</div>';
+                const initial = escapeHtml((Array.from(p.name)[0] || '?').toUpperCase());
+                return `
                 <div class="participant-item">
+                    <div class="avatar" aria-hidden="true">${initial}</div>
                     <div class="participant-info">
                         <div class="participant-name">${escapeHtml(p.name)}</div>
+                        ${detailHtml}
                     </div>
-                    <button class="danger" onclick="removeParticipant(${index})">Remove</button>
-                </div>
-            `).join('');
+                    <div class="participant-actions">
+                        <button class="text-button" onclick="editParticipant(${index})" aria-label="Edit ${escapeHtmlAttr(p.name)}">Edit</button>
+                        <button class="text-button danger" onclick="removeParticipant(${index})" aria-label="Remove ${escapeHtmlAttr(p.name)}">Remove</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (editingIndex !== -1) {
+                const editName = document.getElementById('editName');
+                const editPhone = document.getElementById('editPhone');
+                editName.addEventListener('input', handleNameInput);
+                editPhone.addEventListener('input', handlePhoneInput);
+                list.querySelectorAll('.editing input').forEach(input => {
+                    input.addEventListener('keydown', e => {
+                        if (e.key === 'Enter') saveParticipant();
+                        if (e.key === 'Escape') cancelEditParticipant();
+                    });
+                });
+            }
+        }
+
+        // Render a wishlist URL as a link only if it's http(s); anything else
+        // (e.g. a javascript: URL from an imported file) is shown as plain text
+        function wishlistLink(url) {
+            if (/^https?:\/\//i.test(url)) {
+                return `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`;
+            }
+            return escapeHtml(url);
         }
 
         function addExclusion() {
@@ -454,47 +1452,57 @@
             
             // Check if selections are empty before parsing
             if (giverSelect.value === '' || receiverSelect.value === '') {
-                showError('Please select both giver and receiver');
+                showError('Choose two people first', 'exclusion');
                 return;
             }
-            
+
             const giverIndex = parseInt(giverSelect.value);
             const receiverIndex = parseInt(receiverSelect.value);
 
             // Validate parsed values (check for NaN)
             if (isNaN(giverIndex) || isNaN(receiverIndex)) {
-                showError('Please select both giver and receiver');
+                showError('Choose two people first', 'exclusion');
                 return;
             }
 
             // Validate bounds and non-negative indices
             if (giverIndex < 0 || giverIndex >= participants.length ||
                 receiverIndex < 0 || receiverIndex >= participants.length) {
-                showError('Invalid participant selection');
+                showError('Invalid participant selection', 'exclusion');
                 return;
             }
 
             if (giverIndex === receiverIndex) {
-                showError('A person cannot be excluded from themselves');
+                showError('Choose two different people', 'exclusion');
                 return;
             }
 
-            // Check if this exclusion already exists (unidirectional)
-            if (exclusions.some(ex => 
-                ex.giverIndex === giverIndex && ex.receiverIndex === receiverIndex
-            )) {
-                showError('This exclusion already exists');
+            const bothWays = document.getElementById('excludeBoth').checked;
+            const wanted = [{ giverIndex, receiverIndex }];
+            if (bothWays) wanted.push({ giverIndex: receiverIndex, receiverIndex: giverIndex });
+
+            const exists = (g, r) => exclusions.some(ex => ex.giverIndex === g && ex.receiverIndex === r);
+            const toAdd = wanted.filter(ex => !exists(ex.giverIndex, ex.receiverIndex));
+            if (toAdd.length === 0) {
+                showError('That exclusion is already set', 'exclusion');
                 return;
             }
 
-            exclusions.push({ giverIndex, receiverIndex });
+            exclusions.push(...toAdd);
+            giverSelect.value = '';
+            receiverSelect.value = '';
             updateExclusionsList();
             clearError();
+            saveState();
         }
 
-        function removeExclusion(index) {
-            exclusions.splice(index, 1);
+        // Remove the exclusion giver -> receiver, and the reverse one too if bothWays
+        function removeExclusionPair(giverIndex, receiverIndex, bothWays) {
+            exclusions = exclusions.filter(ex =>
+                !(ex.giverIndex === giverIndex && ex.receiverIndex === receiverIndex) &&
+                !(bothWays && ex.giverIndex === receiverIndex && ex.receiverIndex === giverIndex));
             updateExclusionsList();
+            saveState();
         }
 
         // Cleanup function to remove invalid exclusions (e.g., with out-of-bounds indices)
@@ -511,48 +1519,85 @@
 
         function updateExclusionsList() {
             const list = document.getElementById('exclusionsList');
+            document.getElementById('exclusionCount').textContent = exclusions.length;
+            updateGenerateState();
             if (exclusions.length === 0) {
-                list.innerHTML = '<div class="empty-state">No exclusions set</div>';
+                list.innerHTML = '<div class="empty-state">No exclusions. Anyone can draw anyone.</div>';
                 return;
             }
 
-            list.innerHTML = exclusions.map((ex, index) => {
-                // Defensive checks: validate indices before accessing participants array
-                const giver = (ex.giverIndex >= 0 && ex.giverIndex < participants.length)
-                    ? escapeHtml(participants[ex.giverIndex].name)
-                    : '[Invalid]';
-                const receiver = (ex.receiverIndex >= 0 && ex.receiverIndex < participants.length)
-                    ? escapeHtml(participants[ex.receiverIndex].name)
-                    : '[Invalid]';
-                return `
+            const nameOf = i => (i >= 0 && i < participants.length)
+                ? escapeHtml(participants[i].name)
+                : '[Invalid]';
+            const has = (g, r) => exclusions.some(ex => ex.giverIndex === g && ex.receiverIndex === r);
+
+            // Show a two-way exclusion (A can't draw B and B can't draw A) as one row
+            const shown = new Set();
+            const rows = [];
+            for (const ex of exclusions) {
+                const key = `${ex.giverIndex}>${ex.receiverIndex}`;
+                if (shown.has(key)) continue;
+                shown.add(key);
+                const mutual = has(ex.receiverIndex, ex.giverIndex);
+                if (mutual) shown.add(`${ex.receiverIndex}>${ex.giverIndex}`);
+                const giver = nameOf(ex.giverIndex);
+                const receiver = nameOf(ex.receiverIndex);
+                const label = mutual
+                    ? `${giver} and ${receiver} can't draw each other`
+                    : `${giver} can't draw ${receiver}`;
+                rows.push(`
                     <div class="exclusion-item">
                         <div class="exclusion-pair">
-                            <span class="exclusion-giver">${giver}</span>
-                            <span class="exclusion-separator"></span>
-                            <span class="exclusion-receiver">${receiver}</span>
+                            <span class="exclusion-giver">${giver}</span><span class="exclusion-arrow" aria-hidden="true">${mutual ? '⇄' : '➜'}</span><span class="exclusion-receiver">${receiver}</span><span class="exclusion-note">${mutual ? 'both ways' : 'one way'}</span>
+                            <span class="visually-hidden">${label}</span>
                         </div>
-                        <button class="danger" onclick="removeExclusion(${index})">Remove</button>
-                    </div>
-                `;
-            }).join('');
+                        <button class="text-button danger" onclick="removeExclusionPair(${ex.giverIndex}, ${ex.receiverIndex}, ${mutual})" aria-label="Remove exclusion: ${escapeHtmlAttr(label)}">Remove</button>
+                    </div>`);
+            }
+            list.innerHTML = rows.join('');
         }
 
         function updateExclusionDropdowns() {
             const giverSelect = document.getElementById('excludeGiver');
             const receiverSelect = document.getElementById('excludeReceiver');
 
-            giverSelect.innerHTML = '<option value="">Select giver...</option>' +
+            const options = '<option value="">Choose…</option>' +
                 participants.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join('');
+            giverSelect.innerHTML = options;
+            receiverSelect.innerHTML = options;
+        }
 
-            receiverSelect.innerHTML = '<option value="">Select receiver...</option>' +
-                participants.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join('');
+        function updateGenerateState() {
+            const button = document.getElementById('generateBtn');
+            const hint = document.getElementById('generateHint');
+            const needed = 3 - participants.length;
+            button.disabled = needed > 0;
+            hint.textContent = needed > 0
+                ? `Add ${needed} more ${needed === 1 ? 'person' : 'people'} on the Participants tab to draw names (you need at least 3).`
+                : 'Nobody draws themselves, and no two people draw each other.';
+
+            const people = `${participants.length} ${participants.length === 1 ? 'person' : 'people'}`;
+            const rules = exclusions.length === 0
+                ? 'no exclusions'
+                : `${exclusions.length} exclusion${exclusions.length === 1 ? '' : 's'}`;
+            document.getElementById('drawSummary').textContent = `Ready to draw names for ${people} with ${rules}.`;
+            document.getElementById('peopleNavHint').textContent = needed > 0
+                ? `Add at least ${needed} more to draw names`
+                : '';
         }
 
         function generatePairings() {
             clearError();
 
-            if (participants.length < 2) {
-                showError('Please add at least 2 participants');
+            if (participants.length < 3) {
+                showError('Please add at least 3 participants (with only 2, they would have to draw each other)', 'generate');
+                return;
+            }
+
+            const alreadySent = sentStatus.filter(Boolean).length;
+            if (alreadySent > 0 && !confirm(
+                `You've already sent ${alreadySent} message${alreadySent === 1 ? '' : 's'} for the current pairings. ` +
+                'Generate new pairings anyway?')) {
                 return;
             }
 
@@ -562,7 +1607,7 @@
             // Early feasibility check: ensure a solution is possible
             const feasibilityResult = checkPairingFeasibility();
             if (!feasibilityResult.possible) {
-                showError(feasibilityResult.message);
+                showError(feasibilityResult.message, 'generate');
                 return;
             }
 
@@ -570,11 +1615,23 @@
             const pairings = generatePairingBacktrack();
 
             if (!pairings) {
-                showError('Could not generate valid pairings. Try removing some exclusions.');
+                showError('Could not generate valid pairings. Try removing some exclusions.', 'generate');
                 return;
             }
 
+            currentExclusions = exclusions.map(ex => ({
+                giver: participants[ex.giverIndex],
+                receiver: participants[ex.receiverIndex]
+            }));
+
             displayPairings(pairings);
+            saveState();
+
+            // Results replace the draw button; make sure the top of them is on screen
+            const tabs = document.querySelector('.tabs');
+            if (tabs.getBoundingClientRect().top < 0) {
+                tabs.scrollIntoView({ block: 'start' });
+            }
         }
 
         // Early feasibility check: determines if a valid pairing is possible
@@ -625,8 +1682,6 @@
             const assignment = new Array(participants.length).fill(-1);
             // used[receiverIndex] = true: tracks which receivers have been assigned
             const used = new Array(participants.length).fill(false);
-            // receiverToGiver[receiverIndex] = giverIndex: reverse lookup for O(1) mutual pair checking
-            const receiverToGiver = new Map();
             
             // Build exclusion map for faster lookups
             const exclusionMap = new Map();
@@ -666,7 +1721,7 @@
             function wouldCreateMutualPair(giverIndex, receiverIndex) {
                 // Check if receiverIndex is already assigned to give to giverIndex
                 // If so, assigning giverIndex -> receiverIndex would create: giverIndex -> receiverIndex AND receiverIndex -> giverIndex
-                return receiverToGiver.get(receiverIndex) === giverIndex;
+                return assignment[receiverIndex] === giverIndex;
             }
             
             function backtrack(giverIndex) {
@@ -706,7 +1761,6 @@
                     // Assign this receiver to the giver
                     assignment[giverIndex] = receiverIndex;
                     used[receiverIndex] = true;
-                    receiverToGiver.set(receiverIndex, giverIndex);
                     
                     // Recursively try to assign remaining givers
                     if (backtrack(giverIndex + 1)) {
@@ -716,7 +1770,6 @@
                     // Backtrack: this assignment didn't work, try next
                     assignment[giverIndex] = -1;
                     used[receiverIndex] = false;
-                    receiverToGiver.delete(receiverIndex);
                 }
                 
                 // No valid assignment found for this giver
@@ -736,64 +1789,102 @@
         }
 
         function displayPairings(pairings) {
+            // Store pairings for export and messaging
+            currentPairings = pairings;
+            sentStatus = pairings.map(() => false);
+            renderPairings();
+        }
+
+        function renderPairings() {
             const resultsDiv = document.getElementById('results');
             const pairingsList = document.getElementById('pairingsList');
-            const exportBtn = document.getElementById('exportBtn');
 
-            // Store pairings for export
-            currentPairings = pairings;
+            if (currentPairings.length === 0) {
+                hideResults();
+                return;
+            }
 
-            pairingsList.innerHTML = pairings.map(pair => {
+            const sentCount = sentStatus.filter(Boolean).length;
+            document.getElementById('sentProgress').textContent = sentCount === currentPairings.length
+                ? 'All messages sent 🎉'
+                : `${sentCount} of ${currentPairings.length} sent`;
+            document.getElementById('sentBar').style.width =
+                `${Math.round(sentCount / currentPairings.length * 100)}%`;
+            document.getElementById('pairingsDone').hidden = sentCount !== currentPairings.length;
+            document.getElementById('drawArea').hidden = true;
+
+            pairingsList.innerHTML = currentPairings.map((pair, index) => {
                 const giverName = escapeHtml(pair.giver.name);
                 const receiverName = escapeHtml(pair.receiver.name);
                 const phone = pair.receiver.phone && pair.receiver.phone !== 'N/A' 
-                    ? `<div class="pair-phone">Phone: ${escapeHtml(pair.receiver.phone)}</div>` 
+                    ? `<div class="pair-phone">${receiverName}'s phone: ${escapeHtml(pair.receiver.phone)}</div>` 
                     : '';
                 const wishlist = pair.receiver.wishlist 
-                    ? `<div class="pair-wishlist">Wishlist: <a href="${escapeHtmlAttr(pair.receiver.wishlist)}" target="_blank" rel="noopener noreferrer">${escapeHtml(pair.receiver.wishlist)}</a></div>` 
+                    ? `<div class="pair-wishlist">Wishlist: ${wishlistLink(pair.receiver.wishlist)}</div>`
                     : '';
+                const sent = sentStatus[index] === true;
+                const giverNumber = smsNumber(pair.giver.phone);
+                const firstName = escapeHtml(pair.giver.name.split(' ')[0]);
+                const textTitle = giverNumber
+                    ? `Text ${pair.giver.name} at ${pair.giver.phone}`
+                    : `No phone number for ${pair.giver.name}. Use Copy instead.`;
                 return `
-                <div class="pair-item">
+                <div class="pair-item${sent ? ' sent' : ''}">
                     <div class="pair-info">
                         <div class="pair-names">
                             <span class="pair-giver">${giverName}</span>
-                            <span class="pair-separator"></span>
+                            <span class="pair-separator" aria-hidden="true"></span>
+                            <span class="visually-hidden">gives to</span>
                             <span class="pair-receiver">${receiverName}</span>
                         </div>
                         ${phone}
                         ${wishlist}
+                    </div>
+                    <div class="pair-actions">
+                        <label class="checkbox sent-toggle">
+                            <input type="checkbox" ${sent ? 'checked' : ''} onchange="setSent(${index}, this.checked)">
+                            Sent
+                        </label>
+                        <button class="ghost" data-copy-index="${index}" onclick="copyMessage(${index})" aria-label="Copy message for ${escapeHtmlAttr(pair.giver.name)}">Copy</button>
+                        <button onclick="textGiver(${index})" title="${escapeHtmlAttr(textTitle)}" ${giverNumber ? '' : 'disabled'}>${giverNumber ? `Text ${firstName}` : 'No phone'}</button>
                     </div>
                 </div>
             `;
             }).join('');
 
             resultsDiv.classList.add('show');
-            exportBtn.style.display = 'block';
         }
 
         function exportPairingsToCSV() {
             if (currentPairings.length === 0) {
-                showError('No pairings to export');
+                showError('No pairings to export', 'send');
                 return;
             }
 
-            // CSV headers
-            const headers = ['Giver', 'Receiver', 'Receiver Phone', 'Receiver Wishlist'];
-            
-            // CSV rows
-            const rows = currentPairings.map(pair => {
-                const giver = `"${pair.giver.name.replace(/"/g, '""')}"`;
-                const receiver = `"${pair.receiver.name.replace(/"/g, '""')}"`;
-                const phone = `"${pair.receiver.phone.replace(/"/g, '""')}"`;
-                const wishlist = pair.receiver.wishlist ? `"${pair.receiver.wishlist.replace(/"/g, '""')}"` : '""';
-                return [giver, receiver, phone, wishlist].join(',');
-            });
+            // Every participant appears exactly once as a giver in the pairings,
+            // so the Pairing rows also carry each participant's own phone and wishlist.
+            // Exclusion rows record the exclusions that were in effect for this draw.
+            // This layout is designed to be re-imported next year.
+            const headers = ['Type', 'Giver', 'Giver Phone', 'Giver Wishlist', 'Receiver', 'Receiver Phone', 'Receiver Wishlist'];
 
-            // Combine headers and rows
-            const csvContent = [headers.join(','), ...rows].join('\n');
+            const pairingRows = currentPairings.map(pair => [
+                'Pairing',
+                pair.giver.name, exportPhone(pair.giver.phone), pair.giver.wishlist,
+                pair.receiver.name, exportPhone(pair.receiver.phone), pair.receiver.wishlist
+            ]);
 
-            // Create blob and download
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const exclusionRows = currentExclusions.map(ex => [
+                'Exclusion',
+                ex.giver.name, '', '',
+                ex.receiver.name, '', ''
+            ]);
+
+            const csvContent = [headers, ...pairingRows, ...exclusionRows]
+                .map(row => row.map(csvField).join(','))
+                .join('\r\n');
+
+            // Prepend a UTF-8 BOM so Excel reads accented names correctly
+            const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             
@@ -812,14 +1903,230 @@
             }, 100);
         }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.innerHTML = `<div class="error">${message}</div>`;
+        // Quote a value for CSV. Values starting with a formula character get a
+        // leading apostrophe so spreadsheet apps don't execute them as formulas.
+        function csvField(value) {
+            let text = value == null ? '' : String(value);
+            if (/^[=+\-@\t\r]/.test(text)) {
+                text = "'" + text;
+            }
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        // Participants without a phone are stored as 'N/A'; export those as blank
+        function exportPhone(phone) {
+            return phone && phone !== 'N/A' ? phone : '';
+        }
+
+        // Parse CSV text into an array of rows (arrays of strings).
+        // Handles quoted fields, escaped quotes, commas/newlines inside quotes, CRLF and a UTF-8 BOM.
+        function parseCSV(text) {
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+            const rows = [];
+            let row = [];
+            let field = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (text[i + 1] === '"') { field += '"'; i++; }
+                        else inQuotes = false;
+                    } else {
+                        field += c;
+                    }
+                } else if (c === '"') {
+                    inQuotes = true;
+                } else if (c === ',') {
+                    row.push(field); field = '';
+                } else if (c === '\n' || c === '\r') {
+                    if (c === '\r' && text[i + 1] === '\n') i++;
+                    row.push(field); field = '';
+                    rows.push(row); row = [];
+                } else {
+                    field += c;
+                }
+            }
+            if (field !== '' || row.length > 0) {
+                row.push(field);
+                rows.push(row);
+            }
+            // Drop blank lines
+            return rows.filter(r => r.some(f => f.trim() !== ''));
+        }
+
+        // Reverse the formula protection added by csvField
+        function importField(value) {
+            const text = (value || '').trim();
+            return /^'[=+\-@\t\r]/.test(text) ? text.slice(1) : text;
+        }
+
+        // Turn parsed CSV rows into { participants, exclusions } (exclusions by name).
+        // Supports the current export format (with a Type column) and the older
+        // pairings-only format (Giver, Receiver, Receiver Phone, Receiver Wishlist).
+        function readExportRows(rows) {
+            if (rows.length < 2) {
+                throw new Error('The file has no data rows.');
+            }
+            const header = rows[0].map(h => h.trim().toLowerCase());
+            const col = name => header.indexOf(name);
+            const giverCol = col('giver');
+            const receiverCol = col('receiver');
+            if (giverCol === -1 || receiverCol === -1) {
+                throw new Error('This doesn\'t look like a file exported from this tool (missing Giver/Receiver columns).');
+            }
+            const typeCol = col('type');
+            const columns = {
+                giverPhone: col('giver phone'),
+                giverWishlist: col('giver wishlist'),
+                receiverPhone: col('receiver phone'),
+                receiverWishlist: col('receiver wishlist')
+            };
+
+            const people = new Map(); // lowercase name -> participant
+            const exclusionPairs = [];
+            const get = (row, index) => index === -1 ? '' : importField(row[index]);
+
+            function addPerson(name, phone, wishlist) {
+                const key = name.toLowerCase();
+                const existing = people.get(key);
+                if (existing) {
+                    // Fill in details that an earlier row didn't have
+                    if (!existing.phone && phone) existing.phone = phone;
+                    if (!existing.wishlist && wishlist) existing.wishlist = wishlist;
+                } else {
+                    people.set(key, { name, phone, wishlist });
+                }
+            }
+
+            for (const row of rows.slice(1)) {
+                const type = typeCol === -1 ? 'pairing' : get(row, typeCol).toLowerCase();
+                if (type !== 'pairing' && type !== 'exclusion') continue;
+                const giver = get(row, giverCol);
+                const receiver = get(row, receiverCol);
+                if (!giver || !receiver) continue;
+                addPerson(giver, get(row, columns.giverPhone), get(row, columns.giverWishlist));
+                addPerson(receiver, get(row, columns.receiverPhone), get(row, columns.receiverWishlist));
+                exclusionPairs.push({ giver, receiver, fromPairing: type === 'pairing' });
+            }
+
+            if (people.size === 0) {
+                throw new Error('No participants were found in the file.');
+            }
+            return { people: [...people.values()], exclusionPairs };
+        }
+
+        function importFromCSV(text) {
+            const { people, exclusionPairs } = readExportRows(parseCSV(text));
+
+            // Validate participants with the same limits as manual entry
+            const newParticipants = [];
+            const skipped = [];
+            for (const p of people) {
+                if (p.name.length > 100) {
+                    skipped.push(p.name.slice(0, 20) + '…');
+                    continue;
+                }
+                const phone = p.phone ? formatPhoneNumber(p.phone) : '';
+                const wishlist = p.wishlist && p.wishlist.length <= 2048 ? p.wishlist : null;
+                newParticipants.push({ name: p.name, phone: phone || 'N/A', wishlist });
+            }
+
+            const indexByName = new Map(newParticipants.map((p, i) => [p.name.toLowerCase(), i]));
+            const newExclusions = [];
+            const seen = new Set();
+            let fromPairings = 0;
+            let fromExclusions = 0;
+            for (const pair of exclusionPairs) {
+                const giverIndex = indexByName.get(pair.giver.toLowerCase());
+                const receiverIndex = indexByName.get(pair.receiver.toLowerCase());
+                if (giverIndex === undefined || receiverIndex === undefined || giverIndex === receiverIndex) continue;
+                const key = `${giverIndex}>${receiverIndex}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                newExclusions.push({ giverIndex, receiverIndex });
+                if (pair.fromPairing) fromPairings++; else fromExclusions++;
+            }
+
+            participants = newParticipants;
+            exclusions = newExclusions;
+            editingIndex = -1;
+
+            // Any previously generated results no longer apply
+            currentPairings = [];
+            currentExclusions = [];
+            sentStatus = [];
+            hideResults();
+
+            updateParticipantsList();
+            updateExclusionDropdowns();
+            updateExclusionsList();
+            clearError();
+            saveState();
+
+            let message = `Imported ${participants.length} participant${participants.length === 1 ? '' : 's'}, ` +
+                `${fromExclusions} previous exclusion${fromExclusions === 1 ? '' : 's'}, and ` +
+                `${fromPairings} of last year's pairing${fromPairings === 1 ? '' : 's'} as new exclusions.`;
+            if (skipped.length > 0) {
+                message += ` Skipped ${skipped.length} with names over 100 characters.`;
+            }
+            const feasibility = checkPairingFeasibility();
+            if (!feasibility.possible) {
+                message += ' Note: ' + feasibility.message;
+            }
+            showImportMessage(message, !feasibility.possible);
+        }
+
+        function showImportMessage(message, isError) {
+            const div = document.getElementById('importMessage');
+            div.innerHTML = `<div class="${isError ? 'error' : 'success'}">${escapeHtml(message)}</div>`;
+        }
+
+        function handleImportFile(e) {
+            const input = e.target;
+            const file = input.files && input.files[0];
+            // Reset so choosing the same file again still triggers a change event
+            input.value = '';
+            if (!file) return;
+
+            if (participants.length > 0 &&
+                !confirm('Importing will replace your current participants and exclusions. Continue?')) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    importFromCSV(String(reader.result));
+                } catch (err) {
+                    showImportMessage(err.message || 'Could not read that file.', true);
+                }
+            };
+            reader.onerror = () => showImportMessage('Could not read that file.', true);
+            reader.readAsText(file);
+        }
+
+        // Errors are shown next to the part of the page they're about,
+        // so they're visible on a phone without scrolling
+        const ERROR_AREAS = {
+            participant: 'participantError',
+            exclusion: 'exclusionError',
+            generate: 'generateError',
+            send: 'sendError'
+        };
+
+        function showError(message, area = 'generate') {
+            clearError();
+            const errorDiv = document.getElementById(ERROR_AREAS[area] || ERROR_AREAS.generate);
+            errorDiv.innerHTML = `<div class="error" role="alert">${escapeHtml(message)}</div>`;
+            // Make sure it's on screen (on phones the form can push it below the fold)
+            errorDiv.scrollIntoView({ block: 'nearest' });
         }
 
         function clearError() {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.innerHTML = '';
+            Object.values(ERROR_AREAS).forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
         }
 
         function formatPhoneNumber(value) {
@@ -956,9 +2263,26 @@
             }
         });
 
-        // Initialize
+        document.getElementById('importFile').addEventListener('change', handleImportFile);
+
+        const templateInput = document.getElementById('messageTemplate');
+        templateInput.addEventListener('input', () => {
+            messageTemplate = templateInput.value;
+            saveState();
+        });
+
+        // Initialize, restoring any saved session
+        if (loadState()) {
+            document.getElementById('sessionStatus').textContent =
+                'Restored your saved progress.';
+        }
+        templateInput.value = messageTemplate;
+        document.querySelector('.tabs').addEventListener('keydown', handleTabKeydown);
         updateParticipantsList();
+        updateExclusionDropdowns();
         updateExclusionsList();
+        renderPairings();
+        showStep(activeStep, { focus: false });
     </script>
 
 
